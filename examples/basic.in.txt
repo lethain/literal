@@ -1,0 +1,15 @@
+\init exp 100
+\init level 1
+
+# Hello
+
+\render_all
+
+This is a thing
+
+\incr exp 50
+\render exp
+
+Yeah
+
+\render_all
