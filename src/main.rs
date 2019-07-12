@@ -24,10 +24,13 @@ impl Context {
                 "\\incr" => {
                     let key = words[1].to_string();
                     let value: i64 = words[2].parse().unwrap();
-                    *self.vars.get_mut(&key).unwrap() += value;
+                    match self.vars.get_mut(&key) {
+                        Some(current) => *current += value,
+                        None => eprintln!("[literal] incremented non-existant variable: {}", line),
+                    }
                 },
                 _ => {
-                    println!("[literal] unknown directive: {}", line);
+                    eprintln!("[literal] unknown directive: {}", line);
                 }
             }
         } else {

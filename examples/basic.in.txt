@@ -10,6 +10,7 @@ This is a thing
 \incr exp 50
 \render exp
 
+\incr this 10
 Yeah
 
 \render_all
