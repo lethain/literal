@@ -3,7 +3,6 @@ use std::fs::File;
 
 mod context;
 
-
 fn main() -> Result<(), std::io::Error> {
     let args: Vec<String> = env::args().collect();
     match args.len() {

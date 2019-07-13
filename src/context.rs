@@ -9,6 +9,7 @@ use std::path::Path;
 pub struct Context {
     vars: HashMap<String, i64>,
 }
+
 impl Context {
     pub fn new() -> Context {
         let hm = HashMap::new();
@@ -30,6 +31,51 @@ impl Context {
         };
         Ok(acc.to_string())
     }
+
+    fn process<'a>(&'a mut self, line: String) -> Result<String, String> {
+        let line = line.trim();
+        if line.starts_with("\\") {
+            let words: Vec<&str> = line.split(' ').collect();
+            match words[0] {
+                "\\init" => {
+                    let key = words[1].to_string();
+                    let value: i64 = words[2].parse().unwrap();
+                    self.vars.insert(key, value);
+                    Ok("".to_string())
+                },
+                "\\incr" => {
+                    let key = words[1].to_string();
+                    let value: i64 = words[2].parse().unwrap();
+                    self.directive_incr(line.to_string(), key, value)
+                },
+                "\\render" => {
+                    let filename = words[1].to_string();
+                    match self.render_template(filename) {
+                        Ok(rendered) => Ok(rendered),
+                        Err(e) => Err(format!("[literal] error rendering: {}", e).to_string())
+                    }
+                    
+                },
+                _ => {
+                    Err(format!("[literal] unknown directive: {}", line).to_string())
+                }
+            }
+        } else {
+            Ok(line.to_string()+"\n")
+        }
+    }
+
+    fn directive_incr(&mut self, line: String, key: String, value: i64) -> Result<String, String> {
+        match self.vars.get_mut(&key) {
+            Some(current) => {
+                *current += value;
+                Ok("".to_string())
+            },
+            None => Err(format!("[literal] incremented non-existant variable: {}", line).to_string())
+        }
+    }
+
+
 
     fn render_template(&self, path: String) -> Result<String, String> {
         let path: &Path = Path::new(&path);
@@ -55,42 +101,4 @@ impl Context {
         }
     }
 
-    fn process<'a>(&'a mut self, line: String) -> Result<String, String> {
-        let line = line.trim();
-        if line.starts_with("\\") {
-            let words: Vec<&str> = line.split(' ').collect();
-            match words[0] {
-                "\\init" => {
-                    let key = words[1].to_string();
-                    let value: i64 = words[2].parse().unwrap();
-                    self.vars.insert(key, value);
-                    Ok("".to_string())
-                },
-                "\\incr" => {
-                    let key = words[1].to_string();
-                    let value: i64 = words[2].parse().unwrap();
-                    match self.vars.get_mut(&key) {
-                        Some(current) => {
-                            *current += value;
-                            Ok("".to_string())
-                        }
-                        None => Err(format!("[literal] incremented non-existant variable: {}", line).to_string())
-                    }
-                },
-                "\\render" => {
-                    let filename = words[1].to_string();
-                    match self.render_template(filename) {
-                        Ok(rendered) => Ok(rendered),
-                        Err(e) => Err(format!("[literal] error rendering: {}", e).to_string())
-                    }
-                    
-                },
-                _ => {
-                    Err(format!("[literal] unknown directive: {}", line).to_string())
-                }
-            }
-        } else {
-            Ok(line.to_string()+"\n")
-        }
-    }
 } 
