@@ -43,11 +43,7 @@ impl Context {
                     self.vars.insert(key, value);
                     Ok("".to_string())
                 },
-                "\\incr" => {
-                    let key = words[1].to_string();
-                    let value: i64 = words[2].parse().unwrap();
-                    self.directive_incr(line.to_string(), key, value)
-                },
+                "\\incr" => self.directive_incr(line.to_string(), words),
                 "\\render" => {
                     let filename = words[1].to_string();
                     match self.render_template(filename) {
@@ -65,7 +61,9 @@ impl Context {
         }
     }
 
-    fn directive_incr(&mut self, line: String, key: String, value: i64) -> Result<String, String> {
+    fn directive_incr(&mut self, line: String, words: Vec<&str>) -> Result<String, String> {
+        let key = words[1].to_string();
+        let value: i64 = words[2].parse().unwrap();
         match self.vars.get_mut(&key) {
             Some(current) => {
                 *current += value;
@@ -74,7 +72,6 @@ impl Context {
             None => Err(format!("[literal] incremented non-existant variable: {}", line).to_string())
         }
     }
-
 
 
     fn render_template(&self, path: String) -> Result<String, String> {
