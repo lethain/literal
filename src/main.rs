@@ -17,13 +17,19 @@ impl Context {
     }
     
     fn render(&mut self, file: File) -> Result<String, String> {
+        let mut acc: String = "".to_string();
         for line in BufReader::new(file).lines() {
             match line {
-                Ok(line) => self.process(line),
+                Ok(line) => {
+                    match self.process(line) {
+                        Ok(rendered) => acc = acc.to_string() + &rendered,
+                        Err(e) => return Err(e.to_string()),                
+                    }
+                },
                 Err(e) => return Err(e.to_string()),
             }
         };
-        Ok("".to_string())
+        Ok(acc.to_string())
     }
 
     fn render_template(&self, path: String) -> Result<String, String> {
@@ -50,7 +56,7 @@ impl Context {
         }
     }
 
-    fn process<'a>(&'a mut self, line: String) {
+    fn process<'a>(&'a mut self, line: String) -> Result<String, String> {
         let line = line.trim();
         if line.starts_with("\\") {
             let words: Vec<&str> = line.split(' ').collect();
@@ -59,29 +65,33 @@ impl Context {
                     let key = words[1].to_string();
                     let value: i64 = words[2].parse().unwrap();
                     self.vars.insert(key, value);
+                    Ok("".to_string())
                 },
                 "\\incr" => {
                     let key = words[1].to_string();
                     let value: i64 = words[2].parse().unwrap();
                     match self.vars.get_mut(&key) {
-                        Some(current) => *current += value,
-                        None => eprintln!("[literal] incremented non-existant variable: {}", line),
+                        Some(current) => {
+                            *current += value;
+                            Ok("".to_string())
+                        }
+                        None => Err(format!("[literal] incremented non-existant variable: {}", line).to_string())
                     }
                 },
                 "\\render" => {
                     let filename = words[1].to_string();
                     match self.render_template(filename) {
-                        Ok(rendered) => println!("{}", rendered),
-                        Err(e) => eprintln!("[literal] error rendering: {}", e),
+                        Ok(rendered) => Ok(rendered),
+                        Err(e) => Err(format!("[literal] error rendering: {}", e).to_string())
                     }
                     
                 },
                 _ => {
-                    eprintln!("[literal] unknown directive: {}", line);
+                    Err(format!("[literal] unknown directive: {}", line).to_string())
                 }
             }
         } else {
-            println!("{}", line);
+            Ok(line.to_string()+"\n")
         }
     }
 } 
@@ -93,7 +103,10 @@ fn main() -> Result<(), std::io::Error> {
         _ => {
             let file = File::open(&args[1])?;
             match Context::new().render(file) {
-                Ok(_) => Ok(()),
+                Ok(rendered) => {
+                    println!("{}", rendered);
+                    Ok(())
+                },
                 Err(e) => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e)),
             }
         },
