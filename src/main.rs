@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
@@ -21,7 +22,6 @@ impl Context {
         let filename = path.file_name().unwrap().to_str().unwrap();
 
         let mut tera_ctx = tera::Context::new();
-        //tera_ctx.insert("age", &18);
         for (key, &val) in self.vars.iter() {
             tera_ctx.insert(key, &val);
         }
@@ -77,7 +77,10 @@ impl Context {
 } 
 
 fn main() -> std::io::Result<()> {
-    let file = File::open("examples/basic.in.txt")?;
+    let args: Vec<String> = env::args().collect();
+    println!("args: {:?}", args);
+
+    let file = File::open(&args[1])?;
     let mut ctx = Context::new();
     for line in BufReader::new(file).lines() {
         ctx.process(line?);

@@ -40,7 +40,7 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "cargo run",
+            "command": "cargo run -- examples/basic.in.txt",
             "presentation": {
                 "panel": "new"
             },
