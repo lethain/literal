@@ -24,7 +24,6 @@ impl Context {
         tera_ctx.insert("age", &18);
 
         match tera::Tera::new(&dir) {
-            
             Ok(t) => t.render(filename, &tera_ctx).unwrap().as_str().to_string(),
             Err(e) => {
                 println!("[literal] Failed loading tempaltes: {}", e);
