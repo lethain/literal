@@ -1,19 +1,12 @@
-\init exp 100
+\init exp 0
 \init level 1
 
 # Hello
 
-I am a person.
-
+This is the first line of your book.
 \render templates/status.txt
 
 This is a thing
-
 \incr exp 50
 \incr level 1
-
-\incr this 10
-
-Yeah, things have changed somehow.
-
 \render templates/status.txt

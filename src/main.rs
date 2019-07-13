@@ -82,6 +82,5 @@ fn main() -> std::io::Result<()> {
     for line in BufReader::new(file).lines() {
         ctx.process(line?);
     }
-    println!("\n\n{:#?}", ctx);
     Ok(())
 }
