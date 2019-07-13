@@ -8,9 +8,9 @@
 This is a thing
 
 \incr exp 50
-\render exp
+\render templates/status.txt
 
 \incr this 10
 Yeah
 
-\render_all
+\render templates/status.txt

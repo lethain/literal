@@ -5,3 +5,4 @@ authors = ["Will Larson <lethain@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+tera = "0.11"
