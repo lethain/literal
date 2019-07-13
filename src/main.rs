@@ -76,14 +76,17 @@ impl Context {
     }
 } 
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), std::io::Error> {
     let args: Vec<String> = env::args().collect();
-    println!("args: {:?}", args);
-
-    let file = File::open(&args[1])?;
-    let mut ctx = Context::new();
-    for line in BufReader::new(file).lines() {
-        ctx.process(line?);
+    match args.len() {
+        1 => Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "must specify a file to render")),
+        _ => {
+            let file = File::open(&args[1])?;
+            let mut ctx = Context::new();
+            for line in BufReader::new(file).lines() {
+                ctx.process(line?);
+            };
+            Ok(())
+        },
     }
-    Ok(())
 }
