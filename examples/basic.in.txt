@@ -3,14 +3,17 @@
 
 # Hello
 
-\render_all
+I am a person.
+
+\render templates/status.txt
 
 This is a thing
 
 \incr exp 50
-\render templates/status.txt
+\incr level 1
 
 \incr this 10
-Yeah
+
+Yeah, things have changed somehow.
 
 \render templates/status.txt

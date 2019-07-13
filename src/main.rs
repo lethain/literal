@@ -21,7 +21,10 @@ impl Context {
         let filename = path.file_name().unwrap().to_str().unwrap();
 
         let mut tera_ctx = tera::Context::new();
-        tera_ctx.insert("age", &18);
+        //tera_ctx.insert("age", &18);
+        for (key, &val) in self.vars.iter() {
+            tera_ctx.insert(key, &val);            
+        }
 
         match tera::Tera::new(&dir) {
             Ok(t) => t.render(filename, &tera_ctx).unwrap().as_str().to_string(),
@@ -62,7 +65,6 @@ impl Context {
         } else {
             println!("{}", line);
         }
-
     }
 } 
 
