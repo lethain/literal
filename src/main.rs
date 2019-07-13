@@ -15,6 +15,16 @@ impl Context {
         let hm = HashMap::new();
         Context{vars: hm}
     }
+    
+    fn render(&mut self, file: File) -> Result<String, String> {
+        for line in BufReader::new(file).lines() {
+            match line {
+                Ok(line) => self.process(line),
+                Err(e) => return Err(e.to_string()),
+            }
+        };
+        Ok("".to_string())
+    }
 
     fn render_template(&self, path: String) -> Result<String, String> {
         let path: &Path = Path::new(&path);
@@ -82,11 +92,10 @@ fn main() -> Result<(), std::io::Error> {
         1 => Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "must specify a file to render")),
         _ => {
             let file = File::open(&args[1])?;
-            let mut ctx = Context::new();
-            for line in BufReader::new(file).lines() {
-                ctx.process(line?);
-            };
-            Ok(())
+            match Context::new().render(file) {
+                Ok(_) => Ok(()),
+                Err(e) => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e)),
+            }
         },
     }
 }
