@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -15,7 +15,7 @@ impl Context {
         Context{vars: hm}
     }
 
-    fn render_template(&self, path: String) -> String {
+    fn render_template(&self, path: String) -> Result<String, String> {
         let path: &Path = Path::new(&path);
         let dir = path.parent().unwrap().join("*").to_str().unwrap().to_string();
         let filename = path.file_name().unwrap().to_str().unwrap();
@@ -23,14 +23,19 @@ impl Context {
         let mut tera_ctx = tera::Context::new();
         //tera_ctx.insert("age", &18);
         for (key, &val) in self.vars.iter() {
-            tera_ctx.insert(key, &val);            
+            tera_ctx.insert(key, &val);
         }
 
         match tera::Tera::new(&dir) {
-            Ok(t) => t.render(filename, &tera_ctx).unwrap().as_str().to_string(),
+            Ok(t) => {
+                match t.render(filename, &tera_ctx) {
+                    Ok(rendered) => Ok(rendered.as_str().to_string()),
+                    Err(e) => Err(e.to_string()),
+                }
+            },
             Err(e) => {
-                println!("[literal] Failed loading tempaltes: {}", e);
-                "".to_string()
+                let err_str = format!("[literal] Failed loading templates: {}", e);
+                Err(err_str.to_string())
             }            
         }
     }
@@ -55,8 +60,11 @@ impl Context {
                 },
                 "\\render" => {
                     let filename = words[1].to_string();
-                    let rendered = self.render_template(filename);
-                    println!("{}", rendered);
+                    match self.render_template(filename) {
+                        Ok(rendered) => println!("{}", rendered),
+                        Err(e) => eprintln!("[literal] error rendering: {}", e),
+                    }
+                    
                 },
                 _ => {
                     eprintln!("[literal] unknown directive: {}", line);
@@ -68,7 +76,7 @@ impl Context {
     }
 } 
 
-fn main() -> Result<()> {
+fn main() -> std::io::Result<()> {
     let file = File::open("examples/basic.in.txt")?;
     let mut ctx = Context::new();
     for line in BufReader::new(file).lines() {
