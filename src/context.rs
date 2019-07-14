@@ -111,8 +111,15 @@ impl Context {
                 self.vars.insert(key, var);
                 Ok("".to_string())
             },
-            Err(e) => {
-                Err(e.to_string())
+            Err(_) => {
+                let mut acc = "".to_string();
+                for fragment in words[2..words.len()].iter() {
+                    acc.push_str(&" ".to_string());
+                    acc.push_str(&fragment.to_string());
+                }
+                let var = Variable::string(acc.to_string());
+                self.vars.insert(key, var);
+                Ok("".to_string())
             }
         }
     }
@@ -128,7 +135,9 @@ impl Context {
                         self.vars.insert(key, var)
                     },
                     VariableType::StringVariable => {
+                        //let value = words[2].join(" ").to_string();
                         let value = words[2].to_string();
+
                         let var = Variable::string(value);
                         self.vars.insert(key, var)        
                     },

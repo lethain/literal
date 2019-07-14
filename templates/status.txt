@@ -1,5 +1,6 @@
 
 | Key | Value |
 | --- | --- |
+| **Name**       | {{ name }}  |
 | **Level**      | {{ level }} |
 | **Experience** | {{ exp }}   |

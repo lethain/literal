@@ -1,5 +1,6 @@
 \init exp 0
 \init level 1
+\init name FirstName LastName
 \assert level 1
 
 # Hello
