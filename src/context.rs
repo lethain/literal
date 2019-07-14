@@ -39,20 +39,18 @@ impl Context {
             match words[0] {
                 "\\init" => self.directive_init(words),
                 "\\incr" => self.directive_incr(line.to_string(), words),
-                "\\render" => {
-                    let filename = words[1].to_string();
-                    match self.render_template(filename) {
-                        Ok(rendered) => Ok(rendered),
-                        Err(e) => Err(format!("[literal] error rendering: {}", e).to_string())
-                    }
-                    
-                },
-                _ => {
-                    Err(format!("[literal] unknown directive: {}", line).to_string())
-                }
+                "\\render" => self.directive_render(words),
+                _ => Err(format!("[literal] unknown directive: {}", line).to_string()),
             }
         } else {
             Ok(line.to_string()+"\n")
+        }
+    }
+    fn directive_render(&self, words: Vec<&str>) -> Result<String, String> {
+        let filename = words[1].to_string();
+        match self.render_template(filename) {
+            Ok(rendered) => Ok(rendered),
+            Err(e) => Err(format!("[literal] error rendering: {}", e).to_string())
         }
     }
 
