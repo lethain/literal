@@ -1,5 +1,6 @@
 \init exp 0
 \init level 1
+\assert level 1
 
 # Hello
 
@@ -9,4 +10,5 @@ This is the first line of your book.
 This is a thing
 \incr exp 50
 \incr level 1
+\assert level 2
 \render templates/status.txt

@@ -40,6 +40,7 @@ impl Context {
                 "\\init" => self.directive_init(words),
                 "\\incr" => self.directive_incr(line.to_string(), words),
                 "\\render" => self.directive_render(words),
+                "\\assert" => self.directive_assert(words),
                 _ => Err(format!("[literal] unknown directive: {}", line).to_string()),
             }
         } else {
@@ -51,6 +52,17 @@ impl Context {
         match self.render_template(filename) {
             Ok(rendered) => Ok(rendered),
             Err(e) => Err(format!("[literal] error rendering: {}", e).to_string())
+        }
+    }
+
+    fn directive_assert(&self, words: Vec<&str>) -> Result<String, String> {
+        let key = words[1].to_string();
+        let expected: i64 = words[2].parse().unwrap();
+        let actual = self.vars.get(&key).unwrap();
+        if *actual == expected {
+            Ok("".to_string())
+        } else {
+            Err(format!("[literal] expected {} to be {} but was {}", key, expected, actual).to_string())
         }
     }
 

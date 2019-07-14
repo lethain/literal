@@ -109,15 +109,15 @@ no standard output, and an error-appropriate exit code.
 
 ## Assertions
 
-**Functionality described here is not implemented yet**
-
 You might also want to make assertions about state as you're writing,
 to ensure that you don't make continuity errors:
 
     \init level 1
-    \assert_eq level 1
+    \assert level 1
     \incr level 3
-    \assert_neq level 1
+    \assert level 4
+
+**Assertion functionality below here is not implemented yet**
 
 If variables supported lists, which is planned functionality,
 you could imagine this being more useful, and to be useful in the
