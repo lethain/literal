@@ -103,8 +103,12 @@ impl Context {
     fn directive_init(&mut self, words: Vec<&str>) -> Result<String, String> {
         let key = words[1].to_string();
         let word: &str = words[2];
-        //let parsed: &'a Result< = &words[2].parse()
-        //let value: &'a i64 = word.parse().unwrap();
+
+        if self.vars.contains_key(&key) {
+            let err_msg = format!("already initialized {}", key);
+            return Err(err_msg.to_string())
+        }
+
         match word.parse::<i64>() {
             Ok(value) => {
                 let var = Variable::integer(value);
