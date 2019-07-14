@@ -8,12 +8,23 @@ use std::path::Path;
 #[derive(Debug)]
 enum VariableType {
     IntegerVariable,
+    StringVariable,
 }
 
 #[derive(Debug)]
 struct Variable {
     vt: VariableType,
     iv: i64,
+    sv: String,
+}
+
+impl Variable {
+    fn integer(integer: i64) -> Variable {
+        Variable{vt: VariableType::IntegerVariable, iv: integer, sv: "".to_string()}
+    }
+    fn string(string: String) -> Variable {
+        Variable{vt: VariableType::StringVariable, iv:0, sv: string}
+    }
 }
 
 #[derive(Debug)]
@@ -68,16 +79,24 @@ impl Context {
 
     fn directive_assert(&self, words: Vec<&str>) -> Result<String, String> {
         let key = words[1].to_string();
-        let expected: i64 = words[2].parse().unwrap();
         let actual = self.vars.get(&key).unwrap();
         match actual.vt {
             VariableType::IntegerVariable => {
+                let expected: i64 = words[2].parse().unwrap();
                 if actual.iv == expected {
                     Ok("".to_string())
                 } else {
                     Err(format!("[literal] expected {} to be {} but was {}", key, expected, actual.iv).to_string())
                 }
-            }
+            },
+            VariableType::StringVariable => {
+                let expected: String = words[2].to_string();
+                if actual.sv == expected {
+                    Ok("".to_string())
+                } else {
+                    Err(format!("[literal] expected {} to be {} but was {}", key, expected, actual.sv).to_string())
+                }
+            },
         }
     }
 
@@ -88,7 +107,7 @@ impl Context {
         //let value: &'a i64 = word.parse().unwrap();
         match word.parse::<i64>() {
             Ok(value) => {
-                let var = Variable{vt: VariableType::IntegerVariable, iv: value};
+                let var = Variable::integer(value);
                 self.vars.insert(key, var);
                 Ok("".to_string())
             },
@@ -100,14 +119,18 @@ impl Context {
 
     fn directive_incr(&mut self, line: String, words: Vec<&str>) -> Result<String, String> {
         let key = words[1].to_string();
-        let value: i64 = words[2].parse().unwrap();
         match self.vars.get_mut(&key) {
             Some(current) => {
                 match current.vt {
                     VariableType::IntegerVariable => {
-                        // current.iv = &(*current.iv + value),
-                        let var = Variable{vt: VariableType::IntegerVariable, iv: current.iv + value};
-                        self.vars.insert(key, var);
+                        let value: i64 = words[2].parse().unwrap();
+                        let var = Variable::integer(current.iv+value);
+                        self.vars.insert(key, var)
+                    },
+                    VariableType::StringVariable => {
+                        let value = words[2].to_string();
+                        let var = Variable::string(value);
+                        self.vars.insert(key, var)        
                     },
                 };
                 Ok("".to_string())
@@ -126,6 +149,7 @@ impl Context {
         for (key, val) in self.vars.iter() {
             match val.vt {
                 VariableType::IntegerVariable => tera_ctx.insert(key, &val.iv),
+                VariableType::StringVariable => tera_ctx.insert(key, &val.sv),
             }
         }
 
