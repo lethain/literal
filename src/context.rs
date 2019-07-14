@@ -37,12 +37,7 @@ impl Context {
         if line.starts_with("\\") {
             let words: Vec<&str> = line.split(' ').collect();
             match words[0] {
-                "\\init" => {
-                    let key = words[1].to_string();
-                    let value: i64 = words[2].parse().unwrap();
-                    self.vars.insert(key, value);
-                    Ok("".to_string())
-                },
+                "\\init" => self.directive_init(words),
                 "\\incr" => self.directive_incr(line.to_string(), words),
                 "\\render" => {
                     let filename = words[1].to_string();
@@ -59,6 +54,13 @@ impl Context {
         } else {
             Ok(line.to_string()+"\n")
         }
+    }
+
+    fn directive_init(&mut self, words: Vec<&str>) -> Result<String, String> {
+        let key = words[1].to_string();
+        let value: i64 = words[2].parse().unwrap();
+        self.vars.insert(key, value);
+        Ok("".to_string())
     }
 
     fn directive_incr(&mut self, line: String, words: Vec<&str>) -> Result<String, String> {
