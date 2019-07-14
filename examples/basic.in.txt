@@ -9,6 +9,7 @@ This is the first line of your book.
 \render templates/status.txt
 
 This is a thing
+\incr name SecondName LastName
 \incr exp 50
 \incr level 1
 \assert level 2

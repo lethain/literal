@@ -131,10 +131,8 @@ impl Context {
                         self.vars.insert(key, var)
                     },
                     VariableType::StringVariable => {
-                        //let value = words[2].join(" ").to_string();
-                        let value = words[2].to_string();
-
-                        let var = Variable::string(value);
+                        let acc = words[2..].join(" ");
+                        let var = Variable::string(acc);
                         self.vars.insert(key, var)        
                     },
                 };
