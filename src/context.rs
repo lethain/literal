@@ -6,8 +6,19 @@ use std::collections::HashMap;
 use std::path::Path;
 
 #[derive(Debug)]
+enum VariableType {
+    IntegerVariable,
+}
+
+#[derive(Debug)]
+struct Variable {
+    vt: VariableType,
+    iv: i64,
+}
+
+#[derive(Debug)]
 pub struct Context {
-    vars: HashMap<String, i64>,
+    vars: HashMap<String, Variable>,
 }
 
 impl Context {
@@ -32,7 +43,7 @@ impl Context {
         Ok(acc.to_string())
     }
 
-    fn process<'a>(&'a mut self, line: String) -> Result<String, String> {
+    fn process(&mut self, line: String) -> Result<String, String> {
         let line = line.trim();
         if line.starts_with("\\") {
             let words: Vec<&str> = line.split(' ').collect();
@@ -59,18 +70,32 @@ impl Context {
         let key = words[1].to_string();
         let expected: i64 = words[2].parse().unwrap();
         let actual = self.vars.get(&key).unwrap();
-        if *actual == expected {
-            Ok("".to_string())
-        } else {
-            Err(format!("[literal] expected {} to be {} but was {}", key, expected, actual).to_string())
+        match actual.vt {
+            VariableType::IntegerVariable => {
+                if actual.iv == expected {
+                    Ok("".to_string())
+                } else {
+                    Err(format!("[literal] expected {} to be {} but was {}", key, expected, actual.iv).to_string())
+                }
+            }
         }
     }
 
     fn directive_init(&mut self, words: Vec<&str>) -> Result<String, String> {
         let key = words[1].to_string();
-        let value: i64 = words[2].parse().unwrap();
-        self.vars.insert(key, value);
-        Ok("".to_string())
+        let word: &str = words[2];
+        //let parsed: &'a Result< = &words[2].parse()
+        //let value: &'a i64 = word.parse().unwrap();
+        match word.parse::<i64>() {
+            Ok(value) => {
+                let var = Variable{vt: VariableType::IntegerVariable, iv: value};
+                self.vars.insert(key, var);
+                Ok("".to_string())
+            },
+            Err(e) => {
+                Err(e.to_string())
+            }
+        }
     }
 
     fn directive_incr(&mut self, line: String, words: Vec<&str>) -> Result<String, String> {
@@ -78,7 +103,13 @@ impl Context {
         let value: i64 = words[2].parse().unwrap();
         match self.vars.get_mut(&key) {
             Some(current) => {
-                *current += value;
+                match current.vt {
+                    VariableType::IntegerVariable => {
+                        // current.iv = &(*current.iv + value),
+                        let var = Variable{vt: VariableType::IntegerVariable, iv: current.iv + value};
+                        self.vars.insert(key, var);
+                    },
+                };
                 Ok("".to_string())
             },
             None => Err(format!("[literal] incremented non-existant variable: {}", line).to_string())
@@ -92,8 +123,10 @@ impl Context {
         let filename = path.file_name().unwrap().to_str().unwrap();
 
         let mut tera_ctx = tera::Context::new();
-        for (key, &val) in self.vars.iter() {
-            tera_ctx.insert(key, &val);
+        for (key, val) in self.vars.iter() {
+            match val.vt {
+                VariableType::IntegerVariable => tera_ctx.insert(key, &val.iv),
+            }
         }
 
         match tera::Tera::new(&dir) {
