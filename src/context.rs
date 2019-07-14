@@ -112,11 +112,7 @@ impl Context {
                 Ok("".to_string())
             },
             Err(_) => {
-                let mut acc = "".to_string();
-                for fragment in words[2..words.len()].iter() {
-                    acc.push_str(&" ".to_string());
-                    acc.push_str(&fragment.to_string());
-                }
+                let acc = words[2..].join(" ");
                 let var = Variable::string(acc.to_string());
                 self.vars.insert(key, var);
                 Ok("".to_string())
